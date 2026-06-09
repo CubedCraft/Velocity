@@ -190,4 +190,8 @@ public class KeyedPlayerCommandPacket implements MinecraftPacket {
   public boolean handle(MinecraftSessionHandler handler) {
     return handler.handle(this);
   }
+
+  public KeyedPlayerCommandPacket asUnsigned() {
+    return new KeyedPlayerCommandPacket(command, List.of(), timestamp);
+  }
 }

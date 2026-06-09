@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.annotations.Expose;
 import com.velocitypowered.api.proxy.config.ProxyConfig;
 import com.velocitypowered.api.util.Favicon;
+import com.velocitypowered.proxy.config.migration.ChatSigningForwardingMigration;
 import com.velocitypowered.proxy.config.migration.ConfigurationMigration;
 import com.velocitypowered.proxy.config.migration.ForwardingMigration;
 import com.velocitypowered.proxy.config.migration.KeyAuthenticationMigration;
@@ -96,6 +97,8 @@ public class VelocityConfiguration implements ProxyConfig {
   @Expose
   private boolean forceKeyAuthentication = true; // Added in 1.19
   @Expose
+  private boolean forwardChatSigning = true;
+  @Expose
   private PacketLimiterConfig packetLimiterConfig = PacketLimiterConfig.DEFAULT;
 
   private VelocityConfiguration(Servers servers, ForcedHosts forcedHosts, Advanced advanced,
@@ -113,7 +116,8 @@ public class VelocityConfiguration implements ProxyConfig {
       boolean onlineModeKickExistingPlayers, PingPassthroughMode pingPassthrough,
       boolean samplePlayersInPing, boolean enablePlayerAddressLogging, Servers servers,
       ForcedHosts forcedHosts, Advanced advanced, Query query, Metrics metrics,
-      boolean forceKeyAuthentication, PacketLimiterConfig packetLimiterConfig) {
+      boolean forceKeyAuthentication, boolean forwardChatSigning,
+      PacketLimiterConfig packetLimiterConfig) {
     this.bind = bind;
     this.motd = motd;
     this.showMaxPlayers = showMaxPlayers;
@@ -132,6 +136,7 @@ public class VelocityConfiguration implements ProxyConfig {
     this.query = query;
     this.metrics = metrics;
     this.forceKeyAuthentication = forceKeyAuthentication;
+    this.forwardChatSigning = forwardChatSigning;
     this.packetLimiterConfig = packetLimiterConfig;
   }
 
@@ -447,6 +452,10 @@ public class VelocityConfiguration implements ProxyConfig {
     return forceKeyAuthentication;
   }
 
+  public boolean isForwardChatSigning() {
+    return forwardChatSigning;
+  }
+
   public boolean isEnableReusePort() {
     return advanced.isEnableReusePort();
   }
@@ -472,6 +481,7 @@ public class VelocityConfiguration implements ProxyConfig {
         .add("favicon", favicon)
         .add("enablePlayerAddressLogging", enablePlayerAddressLogging)
         .add("forceKeyAuthentication", forceKeyAuthentication)
+        .add("forwardChatSigning", forwardChatSigning)
         .add("packetLimiterConfig", packetLimiterConfig)
         .toString();
   }
@@ -513,7 +523,8 @@ public class VelocityConfiguration implements ProxyConfig {
           new MotdMigration(),
           new MiniMessageTranslationsMigration(),
           new TransferIntegrationMigration(),
-          new PacketLimiterMigration()
+          new PacketLimiterMigration(),
+          new ChatSigningForwardingMigration()
       };
 
       for (final ConfigurationMigration migration : migrations) {
@@ -564,6 +575,7 @@ public class VelocityConfiguration implements ProxyConfig {
       final int maxPlayers = config.getIntOrElse("show-max-players", 500);
       final boolean onlineMode = config.getOrElse("online-mode", true);
       final boolean forceKeyAuthentication = config.getOrElse("force-key-authentication", true);
+      final boolean forwardChatSigning = config.getOrElse("forward-chat-signing", true);
       final boolean announceForge = config.getOrElse("announce-forge", true);
       final boolean preventClientProxyConnections = config.getOrElse(
               "prevent-client-proxy-connections", false);
@@ -599,6 +611,7 @@ public class VelocityConfiguration implements ProxyConfig {
               new Query(queryConfig),
               new Metrics(metricsConfig),
               forceKeyAuthentication,
+              forwardChatSigning,
               packetLimiterConfig
       );
     }

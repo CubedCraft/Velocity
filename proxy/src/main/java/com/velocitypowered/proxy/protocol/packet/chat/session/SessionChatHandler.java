@@ -52,6 +52,7 @@ public class SessionChatHandler implements ChatHandler<SessionPlayerChatPacket> 
   public void handlePlayerChatInternal(SessionPlayerChatPacket packet) {
     ChatQueue chatQueue = this.player.getChatQueue();
     EventManager eventManager = this.server.getEventManager();
+    final boolean forwardChatSigning = this.server.getConfiguration().isForwardChatSigning();
     PlayerChatEvent toSend = new PlayerChatEvent(player, packet.getMessage());
     CompletableFuture<PlayerChatEvent> eventFuture = eventManager.fire(toSend);
     chatQueue.queuePacket(
@@ -59,7 +60,7 @@ public class SessionChatHandler implements ChatHandler<SessionPlayerChatPacket> 
             .thenApply(pme -> {
               PlayerChatEvent.ChatResult chatResult = pme.getResult();
               if (!chatResult.isAllowed()) {
-                if (packet.isSigned()) {
+                if (forwardChatSigning && packet.isSigned()) {
                   invalidCancel(logger, player);
                 }
                 return null;
@@ -67,7 +68,7 @@ public class SessionChatHandler implements ChatHandler<SessionPlayerChatPacket> 
 
               if (chatResult.getMessage().map(str -> !str.equals(packet.getMessage()))
                   .orElse(false)) {
-                if (packet.isSigned()) {
+                if (forwardChatSigning && packet.isSigned()) {
                   invalidChange(logger, player);
                   return null;
                 }
@@ -76,6 +77,9 @@ public class SessionChatHandler implements ChatHandler<SessionPlayerChatPacket> 
                     .setTimestamp(packet.timestamp)
                     .setLastSeenMessages(newLastSeenMessages)
                     .toServer();
+              }
+              if (!forwardChatSigning) {
+                return packet.asUnsigned(newLastSeenMessages);
               }
               return packet.withLastSeenMessages(newLastSeenMessages);
             })

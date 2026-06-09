@@ -42,7 +42,8 @@ public abstract class RateLimitedCommandHandler<T extends MinecraftPacket> imple
                     player.disconnect(Component.translatable("velocity.kick.command-rate-limit"));
                 }
 
-                if (velocityServer.getConfiguration().isForwardCommandsIfRateLimited()) {
+                if (velocityServer.getConfiguration().isForwardChatSigning()
+                    && velocityServer.getConfiguration().isForwardCommandsIfRateLimited()) {
                     return false; // Send the packet to the server
                 }
             } else {

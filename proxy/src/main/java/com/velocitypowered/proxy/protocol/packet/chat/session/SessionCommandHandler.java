@@ -49,7 +49,7 @@ public class SessionCommandHandler extends RateLimitedCommandHandler<SessionPlay
     if (packet.lastSeenMessages == null) {
       return null;
     }
-    if (packet.isSigned()) {
+    if (packet.isSigned() && this.server.getConfiguration().isForwardChatSigning()) {
       // Any signed message produced by the client *must* be passed through to the server in order to maintain a
       // consistent state for future messages.
       logger.fatal("A plugin tried to deny a command with signable component(s). "
@@ -72,14 +72,15 @@ public class SessionCommandHandler extends RateLimitedCommandHandler<SessionPlay
   @Nullable
   private MinecraftPacket forwardCommand(SessionPlayerCommandPacket packet, String newCommand) {
     if (newCommand.equals(packet.command)) {
-      return packet;
+      return this.server.getConfiguration().isForwardChatSigning()
+          ? packet : packet.asUnsigned(this.player.getProtocolVersion(), packet.lastSeenMessages);
     }
     return modifyCommand(packet, newCommand);
   }
 
   @Nullable
   private MinecraftPacket modifyCommand(SessionPlayerCommandPacket packet, String newCommand) {
-    if (packet.isSigned()) {
+    if (packet.isSigned() && this.server.getConfiguration().isForwardChatSigning()) {
       logger.fatal("A plugin tried to change a command with signed component(s). "
           + "This is not supported. "
           + "Disconnecting player " + player.getUsername() + ". Command packet: " + packet);
@@ -120,6 +121,9 @@ public class SessionCommandHandler extends RateLimitedCommandHandler<SessionPlay
         return forwardCommand(fixedPacket, commandToRun);
       });
     }, packet.command, packet.timeStamp, packet.lastSeenMessages,
-            new CommandExecuteEvent.InvocationInfo(packet.getEventSignedState(), CommandExecuteEvent.Source.PLAYER));
+        new CommandExecuteEvent.InvocationInfo(
+            this.server.getConfiguration().isForwardChatSigning()
+                ? packet.getEventSignedState() : CommandExecuteEvent.SignedState.UNSIGNED,
+            CommandExecuteEvent.Source.PLAYER));
   }
 }

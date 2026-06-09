@@ -72,7 +72,7 @@ public class KeyedChatHandler implements
     CompletableFuture<PlayerChatEvent> future = eventManager.fire(toSend);
 
     CompletableFuture<MinecraftPacket> chatFuture;
-    IdentifiedKey playerKey = this.player.getIdentifiedKey();
+    IdentifiedKey playerKey = this.player.getForwardedIdentifiedKey();
 
     if (playerKey != null && !packet.isUnsigned()) {
       // 1.19->1.19.2 signed version

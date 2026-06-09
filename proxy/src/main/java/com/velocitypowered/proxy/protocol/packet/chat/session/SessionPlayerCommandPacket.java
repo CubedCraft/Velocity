@@ -105,6 +105,23 @@ public class SessionPlayerCommandPacket implements MinecraftPacket {
     return packet;
   }
 
+  public SessionPlayerCommandPacket asUnsigned(
+      ProtocolVersion protocolVersion, @Nullable LastSeenMessages lastSeenMessages) {
+    if (protocolVersion.noLessThan(ProtocolVersion.MINECRAFT_1_20_5)) {
+      UnsignedPlayerCommandPacket packet = new UnsignedPlayerCommandPacket();
+      packet.command = command;
+      return packet;
+    }
+
+    SessionPlayerCommandPacket packet = new SessionPlayerCommandPacket();
+    packet.command = command;
+    packet.timeStamp = timeStamp;
+    packet.salt = 0L;
+    packet.argumentSignatures = new ArgumentSignatures();
+    packet.lastSeenMessages = lastSeenMessages != null ? lastSeenMessages : new LastSeenMessages();
+    return packet;
+  }
+
   public static class ArgumentSignatures {
 
     private final List<ArgumentSignature> entries;

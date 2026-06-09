@@ -151,4 +151,10 @@ public class KeyedPlayerChatPacket implements MinecraftPacket {
   public boolean handle(MinecraftSessionHandler handler) {
     return handler.handle(this);
   }
+
+  public KeyedPlayerChatPacket asUnsigned() {
+    KeyedPlayerChatPacket packet = new KeyedPlayerChatPacket(message);
+    packet.setExpiry(expiry);
+    return packet;
+  }
 }

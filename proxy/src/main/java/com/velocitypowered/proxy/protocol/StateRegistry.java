@@ -86,6 +86,7 @@ import com.velocitypowered.proxy.protocol.packet.RespawnPacket;
 import com.velocitypowered.proxy.protocol.packet.ServerDataPacket;
 import com.velocitypowered.proxy.protocol.packet.ServerLoginPacket;
 import com.velocitypowered.proxy.protocol.packet.ServerLoginSuccessPacket;
+import com.velocitypowered.proxy.protocol.packet.ServerboundChatSessionUpdatePacket;
 import com.velocitypowered.proxy.protocol.packet.ServerboundCookieResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.ServerboundCustomClickActionPacket;
 import com.velocitypowered.proxy.protocol.packet.SetCompressionPacket;
@@ -321,6 +322,14 @@ public enum StateRegistry {
           map(0x07, MINECRAFT_1_21_2, false),
           map(0x08, MINECRAFT_1_21_6, false),
           map(0x09, MINECRAFT_26_1, false));
+      serverbound.register(
+          ServerboundChatSessionUpdatePacket.class,
+          ServerboundChatSessionUpdatePacket::new,
+          map(0x06, MINECRAFT_1_19_3, false),
+          map(0x07, MINECRAFT_1_20_5, false),
+          map(0x08, MINECRAFT_1_21_2, false),
+          map(0x09, MINECRAFT_1_21_6, false),
+          map(0x0A, MINECRAFT_26_1, false));
       serverbound.register(
           ClientSettingsPacket.class,
           ClientSettingsPacket::new,

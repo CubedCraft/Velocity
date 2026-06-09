@@ -97,8 +97,8 @@ public class LoginSessionHandler implements MinecraftSessionHandler {
           serverConn.getPlayerRemoteAddressAsString(),
           player.getProtocolVersion(),
           player.getGameProfile(),
-          player.getIdentifiedKey(),
-          requestedForwardingVersion);
+          player.getForwardedIdentifiedKey(),
+          configuration.isForwardChatSigning() ? requestedForwardingVersion : PlayerDataForwarding.MODERN_DEFAULT);
 
       LoginPluginResponsePacket response = new LoginPluginResponsePacket(
               packet.getId(), true, forwardingData);

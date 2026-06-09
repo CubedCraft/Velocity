@@ -1427,6 +1427,10 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
     return playerKey;
   }
 
+  public @Nullable IdentifiedKey getForwardedIdentifiedKey() {
+    return server.getConfiguration().isForwardChatSigning() ? playerKey : null;
+  }
+
   @Override
   public ProtocolState getProtocolState() {
     return connection.getState().toProtocolState();

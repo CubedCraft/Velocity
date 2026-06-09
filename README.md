@@ -1,3 +1,5 @@
+> ℹ️ This is a fork of Velocity that adds a `forward-chat-signing` option. When set to false all servers must have `enforce-secure-profiles` set to false in server.properties. The better solution is to use [SignedVelocity](https://github.com/4drian3d/SignedVelocity) when possible.
+
 # Velocity
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/PaperMC/Velocity/gradle.yml)](https://papermc.io/downloads/velocity)

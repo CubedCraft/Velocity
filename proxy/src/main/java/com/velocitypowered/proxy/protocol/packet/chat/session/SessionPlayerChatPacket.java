@@ -110,4 +110,15 @@ public class SessionPlayerChatPacket implements MinecraftPacket {
     packet.lastSeenMessages = lastSeenMessages;
     return packet;
   }
+
+  public SessionPlayerChatPacket asUnsigned(LastSeenMessages lastSeenMessages) {
+    SessionPlayerChatPacket packet = new SessionPlayerChatPacket();
+    packet.message = message;
+    packet.timestamp = timestamp;
+    packet.salt = 0L;
+    packet.signed = false;
+    packet.signature = new byte[0];
+    packet.lastSeenMessages = lastSeenMessages;
+    return packet;
+  }
 }

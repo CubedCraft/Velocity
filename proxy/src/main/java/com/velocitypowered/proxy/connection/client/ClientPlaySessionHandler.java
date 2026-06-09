@@ -49,6 +49,7 @@ import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
 import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.RespawnPacket;
+import com.velocitypowered.proxy.protocol.packet.ServerboundChatSessionUpdatePacket;
 import com.velocitypowered.proxy.protocol.packet.ServerboundCookieResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.TabCompleteRequestPacket;
 import com.velocitypowered.proxy.protocol.packet.TabCompleteResponsePacket;
@@ -273,6 +274,11 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
     }
 
     return this.chatHandler.handlePlayerChat(packet);
+  }
+
+  @Override
+  public boolean handle(ServerboundChatSessionUpdatePacket packet) {
+    return !this.server.getConfiguration().isForwardChatSigning();
   }
 
   @Override
@@ -518,9 +524,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
         && serverConnection.getPhase().consideredComplete()
         && smc.getState() == StateRegistry.PLAY;
     if (stateAllowsForward) {
-      if (packet instanceof PluginMessagePacket) {
-        ((PluginMessagePacket) packet).retain();
-      }
+      ReferenceCountUtil.retain(packet);
       smc.write(packet);
     }
   }

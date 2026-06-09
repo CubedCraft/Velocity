@@ -46,18 +46,17 @@ public class KeyedCommandHandler extends RateLimitedCommandHandler<KeyedPlayerCo
   public void handlePlayerCommandInternal(KeyedPlayerCommandPacket packet) {
     queueCommandResult(this.server, this.player, (event, newLastSeenMessages) -> {
       CommandExecuteEvent.CommandResult result = event.getResult();
-      IdentifiedKey playerKey = player.getIdentifiedKey();
+      IdentifiedKey playerKey = player.getForwardedIdentifiedKey();
+      final boolean forwardChatSigning = this.server.getConfiguration().isForwardChatSigning();
       if (result == CommandExecuteEvent.CommandResult.denied()) {
-        if (playerKey != null) {
-          if (!packet.isUnsigned()
-              && playerKey.getKeyRevision().noLessThan(IdentifiedKey.Revision.LINKED_V2)) {
-            logger.fatal("A plugin tried to deny a command with signable component(s). "
-                + "This is not supported. "
-                + "Disconnecting player " + player.getUsername() + ". Command packet: " + packet);
-            player.disconnect(Component.text(
-                "A proxy plugin caused an illegal protocol state. "
-                    + "Contact your network administrator."));
-          }
+        if (!packet.isUnsigned() && playerKey != null
+            && playerKey.getKeyRevision().noLessThan(IdentifiedKey.Revision.LINKED_V2)) {
+          logger.fatal("A plugin tried to deny a command with signable component(s). "
+              + "This is not supported. "
+              + "Disconnecting player " + player.getUsername() + ". Command packet: " + packet);
+          player.disconnect(Component.text(
+              "A proxy plugin caused an illegal protocol state. "
+                  + "Contact your network administrator."));
         }
         return CompletableFuture.completedFuture(null);
       }
@@ -69,7 +68,7 @@ public class KeyedCommandHandler extends RateLimitedCommandHandler<KeyedPlayerCo
             .setTimestamp(packet.getTimestamp())
             .asPlayer(this.player);
 
-        if (!packet.isUnsigned() && commandToRun.equals(packet.getCommand())) {
+        if (forwardChatSigning && !packet.isUnsigned() && commandToRun.equals(packet.getCommand())) {
           return CompletableFuture.completedFuture(packet);
         } else {
           if (!packet.isUnsigned() && playerKey != null
@@ -82,14 +81,18 @@ public class KeyedCommandHandler extends RateLimitedCommandHandler<KeyedPlayerCo
                     + "Contact your network administrator."));
             return CompletableFuture.completedFuture(null);
           }
-          write.message("/" + commandToRun);
+          if (!forwardChatSigning && commandToRun.equals(packet.getCommand())) {
+            return CompletableFuture.completedFuture(packet.asUnsigned());
+          } else {
+            write.message("/" + commandToRun);
+          }
         }
         return CompletableFuture.completedFuture(write.toServer());
       }
       return runCommand(this.server, this.player, commandToRun, hasRun -> {
         if (!hasRun) {
           if (commandToRun.equals(packet.getCommand())) {
-            return packet;
+            return forwardChatSigning ? packet : packet.asUnsigned();
           }
 
           if (!packet.isUnsigned() && playerKey != null
